@@ -1,13 +1,14 @@
 {
   "name": "hubot-badgerboats",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "author": "Sam Roquitte",
   "description": "Make Slack great again",
   "dependencies": {
     "hubot": "^2.19.0",
     "hubot-redis-brain": "0.0.4",
-    "hubot-slack": "^4.3.4"
+    "hubot-slack": "^4.3.4",
+    "moment": "^2.18.1"
   },
   "engines": {
     "node": "0.10.x"

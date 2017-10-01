@@ -9,6 +9,7 @@
 // Module dependencies
 // ================================================================================================
 const utils = require('./utils');
+const moment   = require('moment');
 
 const REDIS_BRAIN_KEY = "badgerboats";
 // Notified on bot start. Can be users or channels (make sure to use @|#)
@@ -16,12 +17,13 @@ const NOTIFY_GROUPS = ['@sam'];
 const ADMIN_USER_NAME = process.env.HUBOT_ADMIN_USER_NAME || 'sam';
 const ADMIN_USER_ID = process.env.HUBOT_ADMIN_USER_ID || '1';
 
+let startTime = new Date();
+
 // ================================================================================================
 // Module exports
 // ================================================================================================
 module.exports = function (robot) {
   let version = require('../package.json').version;
-  let startTime = new Date();
 
   robot.respond(/(.+)/i, function (msg) {
     handleMsg(robot, msg);
@@ -77,6 +79,9 @@ function handleMsg(robot, msg) {
     } else if (message.indexOf('!list') === 0) {
       isCommand = true;
       msg.send(`*User list*: ${getMsgUsers(robot).join(', ')}`);
+    } else if (message.indexOf('!up') === 0) {
+      isCommand = true;
+      msg.send(`I was started ${moment(startTime).fromNow()}`);
     }
   }
   if (!isCommand) {
