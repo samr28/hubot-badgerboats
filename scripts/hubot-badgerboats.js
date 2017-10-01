@@ -61,7 +61,7 @@ function handleMsg(robot, msg) {
   let message = msg.match[1];
   utils.logMsgData(msg, `HANDLE MESSAGE: ${message}`);
   let user = msg.message.user;
-  let isCommand = true;
+  let isCommand = false;
   if (user.id == ADMIN_USER_ID) {
     // Add is the first word (command)
     if (message.indexOf('!add') === 0) {
