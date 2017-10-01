@@ -69,7 +69,7 @@ function handleMsg(robot, msg) {
   let message = msg.match[1];
   utils.logMsgData(msg, `HANDLE MESSAGE: ${message}`);
   let user = msg.message.user;
-  let isCommand = true;
+  let isCommand = false;
   let admins = getAdmins(robot);
   if (admins.indexOf(user.name) !== -1) {
     // Add is the first word (command)
