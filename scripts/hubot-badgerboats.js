@@ -13,8 +13,8 @@ const utils = require('./utils');
 const REDIS_BRAIN_KEY = "badgerboats";
 // Notified on bot start. Can be users or channels (make sure to use @|#)
 const NOTIFY_GROUPS = ['@sam'];
-const ADMIN_USER_NAME = process.env.HUBOT_ADMIN_USER_NAME | 'sam';
-const ADMIN_USER_ID = process.env.HUBOT_ADMIN_USER_ID | 1;
+const ADMIN_USER_NAME = process.env.HUBOT_ADMIN_USER_NAME || 'sam';
+const ADMIN_USER_ID = process.env.HUBOT_ADMIN_USER_ID || '1';
 
 // ================================================================================================
 // Module exports
@@ -48,6 +48,7 @@ module.exports = function (robot) {
     }
   }
 }
+
 /**
  * Handle incoming messages
  *
@@ -58,21 +59,24 @@ function handleMsg(robot, msg) {
   let message = msg.match[1];
   utils.logMsgData(msg, `HANDLE MESSAGE: ${message}`);
   let user = msg.message.user;
-  let isCommand = false;
+  let isCommand = true;
   if (user.id == ADMIN_USER_ID) {
     // Add is the first word (command)
-    if (message.indexOf('add') === 0) {
+    if (message.indexOf('!add') === 0) {
       isCommand = true;
-      let addUser = message.slice(4);
+      let addUser = message.slice(5);
       // Slice off "add" to just leave the user name
       msg.send(`Adding user: "${addUser}"`);
       addMsgUser(robot, addUser);
-    } else if (message.indexOf('remove') === 0) {
-
-    } else if (message.indexOf('list') === 0) {
-      isCommand = true;
+    } else if (message.indexOf('!remove') === 0) {
       let brainData = robot.brain.get(REDIS_BRAIN_KEY);
-      msg.send(brainData);
+      isCommand = true;
+      let removeUser = message.slice(8);
+      // Slice off "remove" to just leave the user name
+      removeMsgUser(robot, msg, removeUser);
+    } else if (message.indexOf('!list') === 0) {
+      isCommand = true;
+      msg.send(`*User list*: ${getMsgUsers(robot).join(', ')}`);
     }
   }
   if (!isCommand) {
@@ -91,8 +95,10 @@ function sendMessage(robot, msg, message) {
   let msgUsers = getMsgUsers(robot);
   let author = msg.message.user.name;
   msgUsers.forEach(function (sendUser) {
-    utils.logMsgData(msg, `SEND MESSAGE TO "${sendUser}", MSG: "${author}: ${message}"`)
-    robot.messageRoom(`@${sendUser}`, `${author}: ${message}`);
+    if (sendUser !== author) {
+      utils.logMsgData(msg, `SEND MESSAGE TO "${sendUser}", MSG: "${author}: ${message}"`)
+      robot.messageRoom(`@${sendUser}`, `*${author}*: ${message}`);
+    }
   });
 }
 
@@ -120,6 +126,7 @@ function addMsgUser(robot, user) {
   let brainData = getMsgUsers(robot);
   brainData.push(user);
   robot.brain.set(REDIS_BRAIN_KEY, brainData);
+  robot.messageRoom(`@${user}`, `You've been added to badgerboats, welcome here!`);
 }
 
 /**
@@ -127,12 +134,15 @@ function addMsgUser(robot, user) {
  * @param  {Object} robot Hubot object
  * @param  {String} user  Username
  */
-function removeMsgUser(robot, user) {
+function removeMsgUser(robot, msg, user) {
   let brainData = getMsgUsers(robot);
   let index = brainData.indexOf(user);
+  msg.send(`${user} - ${brainData}`)
   if (index === -1) {
     return msg.send(`"${user}" is not on the list!`);
   }
   brainData.splice(index, 1);
+  robot.messageRoom(`@${user}`, `You've been removed from badgerboats, see ya l8tr m8!`);
   return msg.send(`Removed "${user}" from the list`);
+
 }
